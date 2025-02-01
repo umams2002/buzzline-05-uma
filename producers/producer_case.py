@@ -23,6 +23,7 @@ Environment variables are in utils/utils_config module.
 
 # import from standard library
 import json
+import os
 import pathlib
 import random
 import sys
@@ -142,11 +143,14 @@ def main() -> None:
         if live_data_path.exists():
             live_data_path.unlink()
             logger.info("Deleted existing live data file.")
+
+        logger.info("STEP 3. Build the path folders to the live data file if needed.")
+        os.makedirs(live_data_path.parent, exist_ok=True)
     except Exception as e:
         logger.error(f"ERROR: Failed to delete live data file: {e}")
         sys.exit(2)
 
-    logger.info("STEP 3. Try to create a Kafka producer and topic.")
+    logger.info("STEP 4. Try to create a Kafka producer and topic.")
     producer = None
 
     try:
@@ -168,7 +172,7 @@ def main() -> None:
             logger.warning(f"WARNING: Failed to create or verify topic '{topic}': {e}")
             producer = None
 
-    logger.info("STEP 4. Generate messages continuously.")
+    logger.info("STEP 5. Generate messages continuously.")
     try:
         for message in generate_messages():
             logger.info(message)

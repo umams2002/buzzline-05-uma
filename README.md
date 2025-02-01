@@ -115,11 +115,12 @@ python3 -m consumers.file_consumer_case
 
 Review the requirements.txt file. 
 - What - if any - new requirements do we need for this project?
-- What are common dependencies as we incorporate data stores into our streaming pipelines?
+- Note that requirements.txt now lists both kafka-python and six. 
+- What are some common dependencies as we incorporate data stores into our streaming pipelines?
 
 Review the .env file with the environment variables.
-- Why is it nice to put some settings in a text file?
-- As we add databases with user names and passwords, we start to keep two versions: 
+- Why is it helpful to put some settings in a text file?
+- As we add database access and passwords, we start to keep two versions: 
    - .evn 
    - .env.example
  - Read the notes in those files - which one is typically NOT added to source control?
