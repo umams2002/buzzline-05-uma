@@ -5,10 +5,23 @@ Nearly every streaming analytics system stores processed data somewhere for furt
 In this example project, we incorporate a relational data store. 
 We use SQLite, but the example could be altered to work with MySQL, PostgreSQL, or MongoDB.
 
+## VS Code Extensions
+
+- Black Formatter by Microsoft
+- Markdown All in One by Yu Zhang
+- PowerShell by Microsoft (on Windows Machines)
+- Pylance by Microsoft
+- Python by Microsoft
+- Python Debugger by Microsoft
+- Ruff by Astral Software (Linter)
+- SQLite Viewer by Florian Klampfer
+- WSL by Microsoft (on Windows Machines)
+
 ## Task 1. Use Tools from Module 1 and 2
 
 Before starting, ensure you have completed the setup tasks in <https://github.com/denisecase/buzzline-01-case> and <https://github.com/denisecase/buzzline-02-case> first. 
-Python 3.11 is required. 
+
+Versions matter. Python 3.11 is required. See the instructions for the required Java JDK and more. 
 
 ## Task 2. Copy This Example Project and Rename
 
@@ -28,19 +41,19 @@ Follow the instructions in [MANAGE-VENV.md](https://github.com/denisecase/buzzli
 2. Activate .venv
 3. Install the required dependencies using requirements.txt.
 
-## Task 4. Start Zookeeper and Kafka (2 Terminals)
+## Task 4. Start Zookeeper and Kafka (Takes 2 Terminals)
 
 If Zookeeper and Kafka are not already running, you'll need to restart them.
 See instructions at [SETUP-KAFKA.md] to:
 
 1. Start Zookeeper Service ([link](https://github.com/denisecase/buzzline-02-case/blob/main/docs/SETUP-KAFKA.md#step-7-start-zookeeper-service-terminal-1))
-2. Start Kafka ([link](https://github.com/denisecase/buzzline-02-case/blob/main/docs/SETUP-KAFKA.md#step-8-start-kafka-terminal-2))
+2. Start Kafka Service ([link](https://github.com/denisecase/buzzline-02-case/blob/main/docs/SETUP-KAFKA.md#step-8-start-kafka-terminal-2))
 
 ---
 
 ## Task 5. Start a New Streaming Application
 
-This will take two terminals:
+This will take two more terminals:
 
 1. One to run the producer which writes messages. 
 2. Another to run the consumer which reads messages, processes them, and writes them to a data store. 
@@ -67,6 +80,8 @@ Mac/Linux:
 source .venv/bin/activate
 python3 -m producers.producer_case
 ```
+
+The producer will still work if Kafka is not available.
 
 ### Consumer (Terminal 4) - Two Options
 
