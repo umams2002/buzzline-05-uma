@@ -25,6 +25,7 @@ Environment variables are in utils/utils_config module.
 
 # import from standard library
 import json
+import os
 import pathlib
 import sys
 
@@ -36,7 +37,10 @@ import utils.utils_config as config
 from utils.utils_consumer import create_kafka_consumer
 from utils.utils_logger import logger
 from utils.utils_producer import verify_services, is_topic_available
-from .db_sqlite_case import init_db, insert_message
+
+# Ensure the parent directory is in sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from consumers.db_sqlite_case import init_db, insert_message
 
 #####################################
 # Function to process a single message
