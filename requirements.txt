@@ -92,14 +92,9 @@ python-dotenv
 # KAFKA MESSAGE BROKER INTEGRATION
 # ======================================================
 
-# Apache Kafka Python client (six was removed so add it separately)
-kafka-python
-six
 
-# Alternative: pin the older version.
-# If you want to use the older version of kafka-python,
-# comment out the two lines above and uncomment the line below.
-#kafka-python==2.0.2
+six
+kafka-python-ng
 
 # ======================================================
 # DATABASE INTEGRATION 
