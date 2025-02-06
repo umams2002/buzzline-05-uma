@@ -51,7 +51,7 @@
 
 ### Windows Command (don't include the #):
 # py -m pip install --upgrade pip setuptools wheel
-# py -m pip install -r requirements.txt
+# py -m pip install --upgrade -r requirements.txt
 
 ### Mac/Linux Command (don't include the #):
 # python3 -m pip install --upgrade pip setuptools wheel
@@ -91,7 +91,6 @@ python-dotenv
 # ======================================================
 # KAFKA MESSAGE BROKER INTEGRATION
 # ======================================================
-
 
 six
 kafka-python-ng
