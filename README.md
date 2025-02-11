@@ -14,7 +14,7 @@ We use SQLite, but the example could be altered to work with MySQL, PostgreSQL, 
 - Python by Microsoft
 - Python Debugger by Microsoft
 - Ruff by Astral Software (Linter)
-- SQLite Viewer by Florian Klampfer
+- **SQLite Viewer by Florian Klampfer**
 - WSL by Microsoft (on Windows Machines)
 
 ## Task 1. Use Tools from Module 1 and 2
