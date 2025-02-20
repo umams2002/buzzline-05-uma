@@ -1,5 +1,7 @@
 # buzzline-05-uma
 
+This project will use producer_case.py file to generate message and new custom consume_uma.py consumer will read the messages and create a average sentiment score for each categories and store the data ina table sqlite db.
+
 Nearly every streaming analytics system stores processed data somewhere for further analysis, historical reference, or integration with BI tools.
 
 In this example project, we incorporate a relational data store. 
@@ -109,7 +111,30 @@ OR
 python3 -m consumers.file_consumer_case
 ```
 
----
+### Custom Consumer (Terminal 4) - Two Options
+
+Start an associated consumer. 
+You have two options. 
+1. Start the consumer that reads from the live data file.
+2. OR Start the consumer that reads from the Kafka topic.
+
+In VS Code, open a NEW terminal in your root project folder. 
+Use the commands below to activate .venv, and start the consumer. 
+
+Windows:
+```shell
+.venv\Scripts\activate
+py -m consumers.consumer_uma
+
+```
+
+Mac/Linux:
+```zsh
+source .venv/bin/activate
+python3 -m consumers.consumer_uma
+
+```
+
 
 ## Review the Project Code
 

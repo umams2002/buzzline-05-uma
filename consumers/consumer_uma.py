@@ -1,8 +1,8 @@
-"""
-consumer_uma.py
+""" consumer_uma.py 
 
-Consume json messages from a live data file. 
-Insert the processed messages into a database.
+Has the following functions:
+- init_db(config): Initialize the SQLite database and create the 'streamed_messages' table if it doesn't exist.
+- insert_message(message, config): Insert a single processed message into the SQLite database.
 
 Example JSON message
 {
@@ -15,175 +15,112 @@ Example JSON message
     "message_length": 42
 }
 
-Database functions are in consumers/db_sqlite_case.py.
-Environment variables are in utils/utils_config module. 
 """
 
 #####################################
 # Import Modules
 #####################################
 
-# import from standard library
 import json
-import pathlib
-import sys
-import time
-
-# import from local modules
-import utils.utils_config as config
+import sqlite3
+from kafka import KafkaConsumer
+from utils.utils_config import get_kafka_topic, get_kafka_broker_address, get_base_data_path
 from utils.utils_logger import logger
-from .db_sqlite_case import init_db, insert_message
+from pathlib import Path
 
 #####################################
-# Function to process a single message
-# #####################################
-
-
-def process_message(message: str) -> None:
-    """
-    Process and transform a single JSON message.
-    Converts message fields to appropriate data types.
-
-    Args:
-        message (str): The JSON message as a string.
-    """
-    try:
-        processed_message = {
-            "message": message.get("message"),
-            "author": message.get("author"),
-            "timestamp": message.get("timestamp"),
-            "category": message.get("category"),
-            "sentiment": float(message.get("sentiment", 0.0)),
-            "keyword_mentioned": message.get("keyword_mentioned"),
-            "message_length": int(message.get("message_length", 0)),
-        }
-        logger.info(f"Processed message: {processed_message}")
-        return processed_message
-    except Exception as e:
-        logger.error(f"Error processing message: {e}")
-        return None
-
-
-#####################################
-# Consume Messages from Live Data File
+# Setup SQLite Connection
 #####################################
 
-
-def consume_messages_from_file(live_data_path, sql_path, interval_secs, last_position):
-    """
-    Consume new messages from a file and process them.
-    Each message is expected to be JSON-formatted.
-
-    Args:
-    - live_data_path (pathlib.Path): Path to the live data file.
-    - sql_path (pathlib.Path): Path to the SQLite database file.
-    - interval_secs (int): Interval in seconds to check for new messages.
-    - last_position (int): Last read position in the file.
-    """
-    logger.info("Called consume_messages_from_file() with:")
-    logger.info(f"   {live_data_path=}")
-    logger.info(f"   {sql_path=}")
-    logger.info(f"   {interval_secs=}")
-    logger.info(f"   {last_position=}")
-
-    logger.info("1. Initialize the database.")
-    init_db(sql_path)
-
-    logger.info("2. Set the last position to 0 to start at the beginning of the file.")
-    last_position = 0
-
-    while True:
-        try:
-            logger.info(f"3. Read from live data file at position {last_position}.")
-            with open(live_data_path, "r") as file:
-                # Move to the last read position
-                file.seek(last_position)
-                for line in file:
-                    # If we strip whitespace and there is content
-                    if line.strip():
-
-                        # Use json.loads to parse the stripped line
-                        message = json.loads(line.strip())
-
-                        # Call our process_message function
-                        processed_message = process_message(message)
-
-                        # If we have a processed message, insert it into the database
-                        if processed_message:
-                            insert_message(processed_message, sql_path)
-
-                # Update the last position that's been read to the current file position
-                last_position = file.tell()
-
-                # Return the last position to be used in the next iteration
-                return last_position
-
-        except FileNotFoundError:
-            logger.error(f"ERROR: Live data file not found at {live_data_path}.")
-            sys.exit(10)
-        except Exception as e:
-            logger.error(f"ERROR: Error reading from live data file: {e}")
-            sys.exit(11)
-
-        time.sleep(interval_secs)
-
+def get_db_connection():
+    db_path = Path(get_base_data_path()) / "sentiment_table.db"
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS category_sentiments (
+            category TEXT PRIMARY KEY,
+            average_sentiment REAL,
+            count INTEGER
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS streamed_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            message TEXT,
+            author TEXT,
+            timestamp TEXT,
+            category TEXT,
+            sentiment REAL,
+            keyword_mentioned TEXT,
+            message_length INTEGER
+        )
+    """)
+    conn.commit()
+    return conn
 
 #####################################
-# Define Main Function
+# Define Consumer Function
 #####################################
 
+def consume_messages():
+    topic = get_kafka_topic()
+    kafka_server = get_kafka_broker_address()
+    
+    consumer = KafkaConsumer(
+        topic,
+        bootstrap_servers=kafka_server,
+        value_deserializer=lambda x: json.loads(x.decode("utf-8"))
+    )
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    logger.info(f"Consumer listening on topic: {topic}")
+    
+    for message in consumer:
+        data = message.value
+        category = data.get("category", "other")
+        sentiment = data.get("sentiment", 0)
 
-def main():
-    """
-    Main function to run the consumer process.
+        # Insert message into the streamed_messages table
+        cursor.execute("""
+            INSERT INTO streamed_messages (
+                message, author, timestamp, category, sentiment, keyword_mentioned, message_length
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            data["message"],
+            data["author"],
+            data["timestamp"],
+            category,
+            sentiment,
+            data["keyword_mentioned"],
+            data["message_length"],
+        ))
 
-    Reads configuration, initializes the database, and starts consumption.
-
-    """
-    logger.info("Starting Consumer to run continuously.")
-    logger.info("Things can fail or get interrupted, so use a try block.")
-    logger.info("Moved .env variables into a utils config module.")
-
-    logger.info("STEP 1. Read environment variables using new config functions.")
-    try:
-        interval_secs: int = config.get_message_interval_seconds_as_int()
-        live_data_path: pathlib.Path = config.get_live_data_path()
-        sqlite_path: pathlib.Path = config.get_sqlite_path()
-        logger.info("SUCCESS: Read environment variables.")
-    except Exception as e:
-        logger.error(f"ERROR: Failed to read environment variables: {e}")
-        sys.exit(1)
-
-    logger.info("STEP 2. Delete any prior database file for a fresh start.")
-    if sqlite_path.exists():
-        try:
-            sqlite_path.unlink()
-            logger.info("SUCCESS: Deleted database file.")
-        except Exception as e:
-            logger.error(f"ERROR: Failed to delete DB file: {e}")
-            sys.exit(2)
-
-    logger.info("STEP 3. Initialize a new database with an empty table.")
-    try:
-        init_db(sqlite_path)
-    except Exception as e:
-        logger.error(f"ERROR: Failed to create db table: {e}")
-        sys.exit(3)
-
-    logger.info("STEP 4. Begin consuming and storing messages.")
-    try:
-        consume_messages_from_file(live_data_path, sqlite_path, interval_secs, 0)
-    except KeyboardInterrupt:
-        logger.warning("Consumer interrupted by user.")
-    except Exception as e:
-        logger.error(f"ERROR: Unexpected error: {e}")
-    finally:
-        logger.info("TRY/FINALLY: Consumer shutting down.")
-
+        # Update category sentiment statistics
+        cursor.execute("SELECT count, average_sentiment FROM category_sentiments WHERE category = ?", (category,))
+        row = cursor.fetchone()
+        
+        if row:
+            count, total_sentiment = row[0], row[1] * row[0]
+        else:
+            count, total_sentiment = 0, 0
+        
+        count += 1
+        total_sentiment += sentiment
+        avg_sentiment = total_sentiment / count
+        
+        cursor.execute(
+            "INSERT INTO category_sentiments (category, average_sentiment, count) VALUES (?, ?, ?) ON CONFLICT(category) DO UPDATE SET average_sentiment = excluded.average_sentiment, count = excluded.count",
+            (category, avg_sentiment, count)
+        )
+        conn.commit()
+        
+        logger.info(f"Updated sentiment for category {category}: {avg_sentiment:.2f}")
 
 #####################################
 # Conditional Execution
 #####################################
 
 if __name__ == "__main__":
-    main()
+    consume_messages()
