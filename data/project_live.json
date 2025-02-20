@@ -168,3 +168,8 @@
 {"message": "I just loved Python! It was boring.", "author": "Eve", "timestamp": "2025-02-20 17:06:36", "category": "tech", "sentiment": 0.61, "keyword_mentioned": "Python", "message_length": 35}
 {"message": "I just found a meme! It was boring.", "author": "Bob", "timestamp": "2025-02-20 17:06:41", "category": "humor", "sentiment": 0.69, "keyword_mentioned": "meme", "message_length": 35}
 {"message": "I just saw a meme! It was funny.", "author": "Eve", "timestamp": "2025-02-20 17:06:46", "category": "humor", "sentiment": 0.06, "keyword_mentioned": "meme", "message_length": 32}
+{"message": "I just found Python! It was amazing.", "author": "Charlie", "timestamp": "2025-02-20 17:06:51", "category": "tech", "sentiment": 0.7, "keyword_mentioned": "Python", "message_length": 36}
+{"message": "I just loved a story! It was exciting.", "author": "Alice", "timestamp": "2025-02-20 17:06:56", "category": "other", "sentiment": 0.12, "keyword_mentioned": "other", "message_length": 38}
+{"message": "I just loved travel! It was exciting.", "author": "Charlie", "timestamp": "2025-02-20 17:07:01", "category": "travel", "sentiment": 0.47, "keyword_mentioned": "travel", "message_length": 37}
+{"message": "I just loved an app! It was exciting.", "author": "Bob", "timestamp": "2025-02-20 17:07:06", "category": "other", "sentiment": 0.01, "keyword_mentioned": "other", "message_length": 37}
+{"message": "I just found game! It was exciting.", "author": "Bob", "timestamp": "2025-02-20 17:07:11", "category": "gaming", "sentiment": 0.16, "keyword_mentioned": "game", "message_length": 35}
